@@ -1,0 +1,186 @@
+<!doctype HTML>
+<html lang = "pt-br">
+
+<header>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>meRegistra! [Alpha]</title>
+	<link rel="stylesheet" href="css/meRegistra.css">
+</header>
+
+<body>
+
+<h1>meRegistra!</h1>
+<br><br>
+<div id = "novoCadastro">
+<div id= "formularioDiv">
+<form id="registro">
+	<label for="num-registro">Numero de registro</label>
+    <input type="number" id="num-registro" name="num-registro" required>
+	<br><br>	
+    <label for="idade">Idade</label>
+    <input type="number" id="idade" name="idade" required>
+	<br><br>
+    <label for="genero">Gênero</label>
+    <select id="genero" name="genero" required>
+      <option value="1">Masculino</option>
+      <option value="0">Feminino</option>
+    </select>
+	<br><br>
+    <label for="escolaridade">Escolaridade</label>
+    <select id="escolaridade" name="escolaridade" required>
+      <option value="1">Fundamental</option>
+      <option value="2">Médio</option>
+      <option value="3">Superior</option>
+    </select>
+	<br><br>
+    <label for="polifarmacia">Polifarmácia</label>
+    <select id="polifarmacia" name="polifarmacia" required>
+      <option value="1">Sim</option>
+      <option value="0">Não</option>
+    </select>
+	<br><br>
+    <label for="comorbidades">Comorbidades</label>
+    <input type="number" id="comorbidades" name="comorbidades" required>
+  </form>
+</div>
+
+<div id = "perguntsDiv">
+  <table>
+        <thead>
+            <tr>
+                <th>Perguntas</th>
+                <th colspan="2">Paciente</th>
+                <th colspan="2">Acompanhante</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th>SIM</th>
+                <th>NÃO</th>
+                <th>SIM</th>
+                <th>NÃO</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Dores no corpo?</td>
+                <td><input type="radio" name="paciente_dores" value="sim"></td>
+                <td><input type="radio" name="paciente_dores" value="nao"></td>
+                <td><input type="radio" name="acomp_dores" value="sim"></td>
+                <td><input type="radio" name="acomp_dores" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Quedas?</td>
+                <td><input type="radio" name="paciente_quedas" value="sim"></td>
+                <td><input type="radio" name="paciente_quedas" value="nao"></td>
+                <td><input type="radio" name="acomp_quedas" value="sim"></td>
+                <td><input type="radio" name="acomp_quedas" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Não sentir sede?</td>
+                <td><input type="radio" name="paciente_sede" value="sim"></td>
+                <td><input type="radio" name="paciente_sede" value="nao"></td>
+                <td><input type="radio" name="acomp_sede" value="sim"></td>
+                <td><input type="radio" name="acomp_sede" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Esquecimento que prejudica as atividades do dia a dia?</td>
+                <td><input type="radio" name="paciente_esquecimento" value="sim"></td>
+                <td><input type="radio" name="paciente_esquecimento" value="nao"></td>
+                <td><input type="radio" name="acomp_esquecimento" value="sim"></td>
+                <td><input type="radio" name="acomp_esquecimento" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Não ter vontade de sair de casa?</td>
+                <td><input type="radio" name="paciente_sair" value="sim"></td>
+                <td><input type="radio" name="paciente_sair" value="nao"></td>
+                <td><input type="radio" name="acomp_sair" value="sim"></td>
+                <td><input type="radio" name="acomp_sair" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Pele seca?</td>
+                <td><input type="radio" name="paciente_pele" value="sim"></td>
+                <td><input type="radio" name="paciente_pele" value="nao"></td>
+                <td><input type="radio" name="acomp_pele" value="sim"></td>
+                <td><input type="radio" name="acomp_pele" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Ter hipertensão arterial?</td>
+                <td><input type="radio" name="paciente_hipertensao" value="sim"></td>
+                <td><input type="radio" name="paciente_hipertensao" value="nao"></td>
+                <td><input type="radio" name="acomp_hipertensao" value="sim"></td>
+                <td><input type="radio" name="acomp_hipertensao" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Sentir tontura?</td>
+                <td><input type="radio" name="paciente_tontura" value="sim"></td>
+                <td><input type="radio" name="paciente_tontura" value="nao"></td>
+                <td><input type="radio" name="acomp_tontura" value="sim"></td>
+                <td><input type="radio" name="acomp_tontura" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Perde urina com facilidade?</td>
+                <td><input type="radio" name="paciente_urina" value="sim"></td>
+                <td><input type="radio" name="paciente_urina" value="nao"></td>
+                <td><input type="radio" name="acomp_urina" value="sim"></td>
+                <td><input type="radio" name="acomp_urina" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Ter muitas doenças e tomar muitos remédios?</td>
+                <td><input type="radio" name="paciente_doencas" value="sim"></td>
+                <td><input type="radio" name="paciente_doencas" value="nao"></td>
+                <td><input type="radio" name="acomp_doencas" value="sim"></td>
+                <td><input type="radio" name="acomp_doencas" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Ter dificuldade para andar?</td>
+                <td><input type="radio" name="paciente_andar" value="sim"></td>
+                <td><input type="radio" name="paciente_andar" value="nao"></td>
+                <td><input type="radio" name="acomp_andar" value="sim"></td>
+                <td><input type="radio" name="acomp_andar" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Dormir pouco?</td>
+                <td><input type="radio" name="paciente_dormir" value="sim"></td>
+                <td><input type="radio" name="paciente_dormir" value="nao"></td>
+                <td><input type="radio" name="acomp_dormir" value="sim"></td>
+                <td><input type="radio" name="acomp_dormir" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Não escutar bem?</td>
+                <td><input type="radio" name="paciente_ouvir" value="sim"></td>
+                <td><input type="radio" name="paciente_ouvir" value="nao"></td>
+                <td><input type="radio" name="acomp_ouvir" value="sim"></td>
+                <td><input type="radio" name="acomp_ouvir" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Ter dificuldade para enxergar?</td>
+                <td><input type="radio" name="paciente_ver" value="sim"></td>
+                <td><input type="radio" name="paciente_ver" value="nao"></td>
+                <td><input type="radio" name="acomp_ver" value="sim"></td>
+                <td><input type="radio" name="acomp_ver" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Não sentir gosto dos alimentos?</td>
+                <td><input type="radio" name="paciente_gosto" value="sim"></td>
+                <td><input type="radio" name="paciente_gosto" value="nao"></td>
+                <td><input type="radio" name="acomp_gosto" value="sim"></td>
+                <td><input type="radio" name="acomp_gosto" value="nao"></td>
+            </tr>
+            <tr>
+                <td>Redução da estatura?</td>
+                <td><input type="radio" name="paciente_altura" value="sim"></td>
+                <td><input type="radio" name="paciente_altura" value="nao"></td>
+                <td><input type="radio" name="acomp_altura" value="sim"></td>
+                <td><input type="radio" name="acomp_altura" value="nao"></td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+<br><br><br>
+<button type="button" id="save-data">Salvar Dados</button>
+</div>
+</body>
+
+</html>
