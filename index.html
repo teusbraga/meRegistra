@@ -1,186 +1,424 @@
-<!doctype HTML>
-<html lang = "pt-br">
+<!doctype html>
+<html lang="pt-br">
 
-<header>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>meRegistra! [Alpha]</title>
-	<link rel="stylesheet" href="css/meRegistra.css">
-</header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>meRegistra! [Alpha]</title>
+   <style>
+        /* Estilos globais */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+
+        /* Container principal */
+        #novoCadastro {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        /* Formulário */
+        #formularioDiv {
+            background-color: #BDE890;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Estilo do botão "Importar JSON" */
+        #import-data-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #import-data-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Botão "Resetar Dados" discreto */
+        #reset-data {
+            padding: 10px 20px;
+            background-color: #ddd;
+            color: #333;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #reset-data:hover {
+            background-color: #ccc;
+        }
+
+        /* Tabela de perguntas */
+        #perguntasDiv {
+            padding: 0;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            text-align: center;
+            padding: 1px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Responsividade */
+        @media (min-width: 768px) {
+            #novoCadastro {
+                flex-direction: row;
+                justify-content: center;
+                align-items: flex-start;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+
+            #formularioDiv {
+                width: 40%;
+            }
+
+            #perguntasDiv {
+                width: 40%;
+            }
+
+            button {
+                margin-top: 2px;
+                width: calc(80% + 40px);
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media (max-width: 767px) {
+            /* Estilo para perguntas no mobile */
+            #perguntasDiv {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                max-width: 100%;
+            }
+        }
+    </style>
+	
+	<script>
+    const DOMAIN_KEY = "meRegistra_alpha_storage";
+
+    function apenasNumeros(event) {
+        const inpult = event.target;
+        inpult.value = inpult.value.replace(/[^0-9]/g, '');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const saveButton = document.getElementById("save-data");
+        const resetButton = document.getElementById("reset-data");
+        const exportButton = document.getElementById("export-data");
+        const importButton = document.getElementById("import-data");
+        const savedDataDiv = document.getElementById("saved-data");
+
+        saveButton.addEventListener("click", () => {
+            const numRegistro = document.getElementById("num-registro").value;
+            const idade = parseInt(document.getElementById("idade").value, 10);
+
+            if (!numRegistro) {
+                alert("Número de Registro é obrigatório.");
+                return;
+            }
+
+            if (isNaN(idade) || idade < 1) {
+                alert("Idade deve ser um número positivo.");
+                return;
+            }
+
+            const paciente = {
+                num_registro: numRegistro,
+                idade,
+                genero: document.getElementById("genero").value || null,
+                escolaridade: document.getElementById("escolaridade").value || null,
+                polifarmacia: document.getElementById("polifarmacia").value || null,
+                comorbidades: document.getElementById("comorbidades").value || null,
+                rp: [],
+                ra: [],
+                data_hora: new Date().toISOString() // Adiciona o timestamp
+            };
+
+            for (let i = 1; i <= 16; i++) {
+                const respostaPaciente = document.querySelector(`input[name=paciente_q${i}]:checked`);
+                paciente.rp.push(respostaPaciente ? respostaPaciente.value : null);
+
+                const respostaAcomp = document.querySelector(`input[name=acomp_q${i}]:checked`);
+                paciente.ra.push(respostaAcomp ? respostaAcomp.value : null);
+            }
+
+            const existingData = JSON.parse(localStorage.getItem(DOMAIN_KEY)) || [];
+
+            if (existingData.some(item => item.num_registro === numRegistro)) {
+                alert("Número de Registro já existe. Por favor, insira um único.");
+                return;
+            }
+
+            existingData.push(paciente);
+            localStorage.setItem(DOMAIN_KEY, JSON.stringify(existingData));
+            renderSavedData();
+        });
+
+		resetButton.addEventListener("click", () => {
+		// Primeiro alerta de confirmação
+		if (!confirm("Você tem certeza que deseja resetar todos os dados?")) {
+			return; // Sai da função se o usuário escolher "Cancelar"
+		}
+
+		// Segundo alerta de confirmação
+		if (!confirm("Essa ação é irreversível. Deseja realmente continuar?")) {
+			return; // Sai da função se o usuário escolher "Cancelar"
+		}
+
+		localStorage.removeItem(DOMAIN_KEY); // Remove os dados do localStorage
+		renderSavedData(); // Atualiza a exibição dos dados
+		});
+
+
+        exportButton.addEventListener("click", () => {
+            const data = JSON.parse(localStorage.getItem(DOMAIN_KEY)) || [];
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "meRegistra_data.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        importButton.addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (Array.isArray(importedData)) {
+                            localStorage.setItem(DOMAIN_KEY, JSON.stringify(importedData));
+                            renderSavedData();
+                        } else {
+                            alert("Arquivo JSON inválido.");
+                        }
+                    } catch (error) {
+                        alert("Erro ao importar JSON: " + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+function renderSavedData() {
+    const data = JSON.parse(localStorage.getItem(DOMAIN_KEY)) || [];
+
+    let tableHTML = "<table border='1'>";
+    tableHTML += "<thead><tr><th>Registro</th><th>Idade</th><th>Gênero</th><th>Escolaridade</th><th>Polifarmácia</th><th>Comorbidades</th><th>Data/Hora</th></tr></thead><tbody>";
+
+    data.forEach((paciente, index) => {
+        const genero = paciente.genero === "1" ? "Masculino" : "Feminino";
+        const escolaridadeMap = {
+            "1": "Fundamental",
+            "2": "Médio",
+            "3": "Superior",
+        };
+        const escolaridade = escolaridadeMap[paciente.escolaridade] || "-";
+        const polifarmacia = paciente.polifarmacia === "1" ? "Sim" : "Não";
+
+        tableHTML += `<tr>
+            <td>${paciente.num_registro || "-"}</td>
+            <td>${paciente.idade || "-"}</td>
+            <td>${genero}</td>
+            <td>${escolaridade}</td>
+            <td>${polifarmacia}</td>
+            <td>${paciente.comorbidades || "-"}</td>
+            <td>${paciente.data_hora || "-"}</td>
+			 <td><button class="delete-btn" data-index="${index}">X</button></td>
+        </tr>`;
+    });
+
+    tableHTML += "</tbody></table>";
+    savedDataDiv.innerHTML = tableHTML;
+}
+
+
+        renderSavedData();
+    });
+
+
+</script>
+
+</head>
 
 <body>
 
 <h1>meRegistra!</h1>
-<br><br>
-<div id = "novoCadastro">
-<div id= "formularioDiv">
-<form id="registro">
-	<label for="num-registro">Número de registro</label>
-    <input type="number" id="num-registro" name="num-registro" required>
-	<br><br>	
-    <label for="idade">Idade</label>
-    <input type="number" id="idade" name="idade" required>
-	<br><br>
-    <label for="genero">Gênero</label>
-    <select id="genero" name="genero" required>
-      <option value="1">Masculino</option>
-      <option value="0">Feminino</option>
-    </select>
-	<br><br>
-    <label for="escolaridade">Escolaridade</label>
-    <select id="escolaridade" name="escolaridade" required>
-      <option value="1">Fundamental</option>
-      <option value="2">Médio</option>
-      <option value="3">Superior</option>
-    </select>
-	<br><br>
-    <label for="polifarmacia">Polifarmácia</label>
-    <select id="polifarmacia" name="polifarmacia" required>
-      <option value="1">Sim</option>
-      <option value="0">Não</option>
-    </select>
-	<br><br>
-    <label for="comorbidades">Comorbidades</label>
-    <input type="number" id="comorbidades" name="comorbidades" required>
-  </form>
+
+<div id="novoCadastro">
+    <div id="formularioDiv">
+        <form id="registro">
+            <label for="num-registro">Número de Registro</label>
+            <input type="text" id="num-registro" name="num-registro" maxlength="18" oninput="apenasNumeros(event)" required>
+            <br><br>
+            <label for="idade">Idade</label>
+            <input type="number" id="idade" name="idade" min="1" required>
+            <br><br>
+            <label for="genero">Gênero</label>
+            <select id="genero" name="genero" required>
+                <option value="0" selected>Feminino</option>
+                <option value="1">Masculino</option>
+            </select>
+            <br><br>
+            <label for="escolaridade">Escolaridade</label>
+            <select id="escolaridade" name="escolaridade" required>
+                <option value="1" selected>Fundamental</option>
+                <option value="2">Médio</option>
+                <option value="3">Superior</option>
+            </select>
+            <br><br>
+            <label for="polifarmacia">Polifarmácia</label>
+            <select id="polifarmacia" name="polifarmacia" required>
+                <option value="1">Sim</option>
+                <option value="0" selected>Não</option>
+            </select>
+            <br><br>
+            <label for="comorbidades">Comorbidades</label>
+            <input type="number" id="comorbidades" name="comorbidades" min="0" value="0" required>
+        </form>
+    </div>
+
+    <div id="perguntasDiv">
+        <table>
+            <thead>
+                <tr>
+                    <th>Perguntas</th>
+                    <th>Paciente SIM</th>
+                    <th>Paciente NÃO</th>
+                    <th>Acompanhante SIM</th>
+                    <th>Acompanhante NÃO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <script>
+                    const perguntas = [
+                        "Dores no corpo?",
+                        "Quedas?",
+                        "Não sentir sede?",
+                        "Esquecimento que prejudica as atividades do dia a dia?",
+                        "Não ter vontade de sair de casa?",
+                        "Pele seca?",
+                        "Ter hipertensão arterial?",
+                        "Sentir tontura?",
+                        "Perde urina com facilidade?",
+                        "Ter muitas doenças e tomar muitos remédios?",
+                        "Ter dificuldade para andar?",
+                        "Dormir pouco?",
+                        "Não escutar bem?",
+                        "Ter dificuldade para enxergar?",
+                        "Não sentir gosto dos alimentos?",
+                        "Redução da estatura?",
+                    ];
+
+                    perguntas.forEach((pergunta, index) => {
+                        document.write(`<tr>
+                            <td>${pergunta}</td>
+                            <td><input type="radio" name="paciente_q${index + 1}" value="1"></td>
+                            <td><input type="radio" name="paciente_q${index + 1}" value="0"></td>
+                            <td><input type="radio" name="acomp_q${index + 1}" value="1"></td>
+                            <td><input type="radio" name="acomp_q${index + 1}" value="0"></td>
+                        </tr>`);
+                    });
+                </script>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <button type="button" id="save-data">Salvar Dados</button>
+    
+    <button type="button" id="export-data">Exportar JSON</button>
+    <label for="import-data" class="button">Importar JSON</label>
+    <input type="file" id="import-data" accept="application/json" style="display:none;">
+	<button type="button" id="reset-data">Resetar Dados</button>
 </div>
 
-<div id = "perguntsDiv">
-  <table>
-        <thead>
-            <tr>
-                <th>Perguntas</th>
-                <th colspan="2">Paciente</th>
-                <th colspan="2">Acompanhante</th>
-            </tr>
-            <tr>
-                <th></th>
-                <th>SIM</th>
-                <th>NÃO</th>
-                <th>SIM</th>
-                <th>NÃO</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Dores no corpo?</td>
-                <td><input type="radio" name="paciente_dores" value="sim"></td>
-                <td><input type="radio" name="paciente_dores" value="nao"></td>
-                <td><input type="radio" name="acomp_dores" value="sim"></td>
-                <td><input type="radio" name="acomp_dores" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Quedas?</td>
-                <td><input type="radio" name="paciente_quedas" value="sim"></td>
-                <td><input type="radio" name="paciente_quedas" value="nao"></td>
-                <td><input type="radio" name="acomp_quedas" value="sim"></td>
-                <td><input type="radio" name="acomp_quedas" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Não sentir sede?</td>
-                <td><input type="radio" name="paciente_sede" value="sim"></td>
-                <td><input type="radio" name="paciente_sede" value="nao"></td>
-                <td><input type="radio" name="acomp_sede" value="sim"></td>
-                <td><input type="radio" name="acomp_sede" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Esquecimento que prejudica as atividades do dia a dia?</td>
-                <td><input type="radio" name="paciente_esquecimento" value="sim"></td>
-                <td><input type="radio" name="paciente_esquecimento" value="nao"></td>
-                <td><input type="radio" name="acomp_esquecimento" value="sim"></td>
-                <td><input type="radio" name="acomp_esquecimento" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Não ter vontade de sair de casa?</td>
-                <td><input type="radio" name="paciente_sair" value="sim"></td>
-                <td><input type="radio" name="paciente_sair" value="nao"></td>
-                <td><input type="radio" name="acomp_sair" value="sim"></td>
-                <td><input type="radio" name="acomp_sair" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Pele seca?</td>
-                <td><input type="radio" name="paciente_pele" value="sim"></td>
-                <td><input type="radio" name="paciente_pele" value="nao"></td>
-                <td><input type="radio" name="acomp_pele" value="sim"></td>
-                <td><input type="radio" name="acomp_pele" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Ter hipertensão arterial?</td>
-                <td><input type="radio" name="paciente_hipertensao" value="sim"></td>
-                <td><input type="radio" name="paciente_hipertensao" value="nao"></td>
-                <td><input type="radio" name="acomp_hipertensao" value="sim"></td>
-                <td><input type="radio" name="acomp_hipertensao" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Sentir tontura?</td>
-                <td><input type="radio" name="paciente_tontura" value="sim"></td>
-                <td><input type="radio" name="paciente_tontura" value="nao"></td>
-                <td><input type="radio" name="acomp_tontura" value="sim"></td>
-                <td><input type="radio" name="acomp_tontura" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Perde urina com facilidade?</td>
-                <td><input type="radio" name="paciente_urina" value="sim"></td>
-                <td><input type="radio" name="paciente_urina" value="nao"></td>
-                <td><input type="radio" name="acomp_urina" value="sim"></td>
-                <td><input type="radio" name="acomp_urina" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Ter muitas doenças e tomar muitos remédios?</td>
-                <td><input type="radio" name="paciente_doencas" value="sim"></td>
-                <td><input type="radio" name="paciente_doencas" value="nao"></td>
-                <td><input type="radio" name="acomp_doencas" value="sim"></td>
-                <td><input type="radio" name="acomp_doencas" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Ter dificuldade para andar?</td>
-                <td><input type="radio" name="paciente_andar" value="sim"></td>
-                <td><input type="radio" name="paciente_andar" value="nao"></td>
-                <td><input type="radio" name="acomp_andar" value="sim"></td>
-                <td><input type="radio" name="acomp_andar" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Dormir pouco?</td>
-                <td><input type="radio" name="paciente_dormir" value="sim"></td>
-                <td><input type="radio" name="paciente_dormir" value="nao"></td>
-                <td><input type="radio" name="acomp_dormir" value="sim"></td>
-                <td><input type="radio" name="acomp_dormir" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Não escutar bem?</td>
-                <td><input type="radio" name="paciente_ouvir" value="sim"></td>
-                <td><input type="radio" name="paciente_ouvir" value="nao"></td>
-                <td><input type="radio" name="acomp_ouvir" value="sim"></td>
-                <td><input type="radio" name="acomp_ouvir" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Ter dificuldade para enxergar?</td>
-                <td><input type="radio" name="paciente_ver" value="sim"></td>
-                <td><input type="radio" name="paciente_ver" value="nao"></td>
-                <td><input type="radio" name="acomp_ver" value="sim"></td>
-                <td><input type="radio" name="acomp_ver" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Não sentir gosto dos alimentos?</td>
-                <td><input type="radio" name="paciente_gosto" value="sim"></td>
-                <td><input type="radio" name="paciente_gosto" value="nao"></td>
-                <td><input type="radio" name="acomp_gosto" value="sim"></td>
-                <td><input type="radio" name="acomp_gosto" value="nao"></td>
-            </tr>
-            <tr>
-                <td>Redução da estatura?</td>
-                <td><input type="radio" name="paciente_altura" value="sim"></td>
-                <td><input type="radio" name="paciente_altura" value="nao"></td>
-                <td><input type="radio" name="acomp_altura" value="sim"></td>
-                <td><input type="radio" name="acomp_altura" value="nao"></td>
-            </tr>
-        </tbody>
-    </table>
+<div id="saved-data"></div>
 
-</div>
-<br><br><br>
-<button type="button" id="save-data">Salvar Dados</button>
-</div>
 </body>
 
 </html>
