@@ -5,329 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>meRegistra! [Alpha]</title>
-   <style>
-        /* Estilos globais */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-
-        h1 {
-            text-align: center;
-            color: #4CAF50;
-            margin-top: 20px;
-        }
-
-        /* Container principal */
-        #novoCadastro {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 1200px;
-            margin: 20px auto;
-        }
-
-        /* Formulário */
-        #formularioDiv {
-            background-color: #BDE890;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        /* Estilo do botão "Importar JSON" */
-        #import-data-button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        #import-data-button:hover {
-            background-color: #45a049;
-        }
-
-        /* Botão "Resetar Dados" discreto */
-        #reset-data {
-            padding: 10px 20px;
-            background-color: #ddd;
-            color: #333;
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        #reset-data:hover {
-            background-color: #ccc;
-        }
-
-        /* Tabela de perguntas */
-        #perguntasDiv {
-            padding: 0;
-            width: 100%;
-            max-width: 500px;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        th,
-        td {
-            text-align: center;
-            padding: 1px;
-            border: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        /* Responsividade */
-        @media (min-width: 768px) {
-            #novoCadastro {
-                flex-direction: row;
-                justify-content: center;
-                align-items: flex-start;
-                gap: 20px;
-                flex-wrap: wrap;
-            }
-
-            #formularioDiv {
-                width: 40%;
-            }
-
-            #perguntasDiv {
-                width: 40%;
-            }
-
-            button {
-                margin-top: 2px;
-                width: calc(80% + 40px);
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
-
-        @media (max-width: 767px) {
-            /* Estilo para perguntas no mobile */
-            #perguntasDiv {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                align-items: center;
-                gap: 10px;
-            }
-
-            table {
-                display: block;
-                overflow-x: auto;
-                max-width: 100%;
-            }
-        }
-    </style>
-	
-	<script>
-    const DOMAIN_KEY = "meRegistra_alpha_storage";
-
-    function apenasNumeros(event) {
-        const inpult = event.target;
-        inpult.value = inpult.value.replace(/[^0-9]/g, '');
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const saveButton = document.getElementById("save-data");
-        const resetButton = document.getElementById("reset-data");
-        const exportButton = document.getElementById("export-data");
-        const importButton = document.getElementById("import-data");
-        const savedDataDiv = document.getElementById("saved-data");
-
-        saveButton.addEventListener("click", () => {
-            const numRegistro = document.getElementById("num-registro").value;
-            const idade = parseInt(document.getElementById("idade").value, 10);
-
-            if (!numRegistro) {
-                alert("Número de Registro é obrigatório.");
-                return;
-            }
-
-            if (isNaN(idade) || idade < 1) {
-                alert("Idade deve ser um número positivo.");
-                return;
-            }
-
-            const paciente = {
-                num_registro: numRegistro,
-                idade,
-                genero: document.getElementById("genero").value || null,
-                escolaridade: document.getElementById("escolaridade").value || null,
-                polifarmacia: document.getElementById("polifarmacia").value || null,
-                comorbidades: document.getElementById("comorbidades").value || null,
-                rp: [],
-                ra: [],
-                data_hora: new Date().toISOString() // Adiciona o timestamp
-            };
-
-            for (let i = 1; i <= 16; i++) {
-                const respostaPaciente = document.querySelector(`input[name=paciente_q${i}]:checked`);
-                paciente.rp.push(respostaPaciente ? respostaPaciente.value : null);
-
-                const respostaAcomp = document.querySelector(`input[name=acomp_q${i}]:checked`);
-                paciente.ra.push(respostaAcomp ? respostaAcomp.value : null);
-            }
-
-            const existingData = JSON.parse(localStorage.getItem(DOMAIN_KEY)) || [];
-
-            if (existingData.some(item => item.num_registro === numRegistro)) {
-                alert("Número de Registro já existe. Por favor, insira um único.");
-                return;
-            }
-
-            existingData.push(paciente);
-            localStorage.setItem(DOMAIN_KEY, JSON.stringify(existingData));
-            renderSavedData();
-        });
-
-		resetButton.addEventListener("click", () => {
-		// Primeiro alerta de confirmação
-		if (!confirm("Você tem certeza que deseja resetar todos os dados?")) {
-			return; // Sai da função se o usuário escolher "Cancelar"
-		}
-
-		// Segundo alerta de confirmação
-		if (!confirm("Essa ação é irreversível. Deseja realmente continuar?")) {
-			return; // Sai da função se o usuário escolher "Cancelar"
-		}
-
-		localStorage.removeItem(DOMAIN_KEY); // Remove os dados do localStorage
-		renderSavedData(); // Atualiza a exibição dos dados
-		});
-
-
-        exportButton.addEventListener("click", () => {
-            const data = JSON.parse(localStorage.getItem(DOMAIN_KEY)) || [];
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "meRegistra_data.json";
-            a.click();
-            URL.revokeObjectURL(url);
-        });
-
-        importButton.addEventListener("change", (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const importedData = JSON.parse(e.target.result);
-                        if (Array.isArray(importedData)) {
-                            localStorage.setItem(DOMAIN_KEY, JSON.stringify(importedData));
-                            renderSavedData();
-                        } else {
-                            alert("Arquivo JSON inválido.");
-                        }
-                    } catch (error) {
-                        alert("Erro ao importar JSON: " + error.message);
-                    }
-                };
-                reader.readAsText(file);
-            }
-        });
-
-function renderSavedData() {
-    const data = JSON.parse(localStorage.getItem(DOMAIN_KEY)) || [];
-
-    let tableHTML = "<table border='1'>";
-    tableHTML += "<thead><tr><th>Registro</th><th>Idade</th><th>Gênero</th><th>Escolaridade</th><th>Polifarmácia</th><th>Comorbidades</th><th>Data/Hora</th></tr></thead><tbody>";
-
-    data.forEach((paciente, index) => {
-        const genero = paciente.genero === "1" ? "Masculino" : "Feminino";
-        const escolaridadeMap = {
-            "1": "Fundamental",
-            "2": "Médio",
-            "3": "Superior",
-        };
-        const escolaridade = escolaridadeMap[paciente.escolaridade] || "-";
-        const polifarmacia = paciente.polifarmacia === "1" ? "Sim" : "Não";
-
-        tableHTML += `<tr>
-            <td>${paciente.num_registro || "-"}</td>
-            <td>${paciente.idade || "-"}</td>
-            <td>${genero}</td>
-            <td>${escolaridade}</td>
-            <td>${polifarmacia}</td>
-            <td>${paciente.comorbidades || "-"}</td>
-            <td>${paciente.data_hora || "-"}</td>
-			 <td><button class="delete-btn" data-index="${index}">X</button></td>
-        </tr>`;
-    });
-
-    tableHTML += "</tbody></table>";
-    savedDataDiv.innerHTML = tableHTML;
-}
-
-
-        renderSavedData();
-    });
-
-
-</script>
-
+	<link rel="stylesheet" href="css/meRegistra.css">
 </head>
-
 <body>
-
 <h1>meRegistra!</h1>
 
 <div id="novoCadastro">
@@ -364,15 +44,21 @@ function renderSavedData() {
     </div>
 
     <div id="perguntasDiv">
+	<form>
         <table>
-            <thead>
-                <tr>
-                    <th>Perguntas</th>
-                    <th>Paciente SIM</th>
-                    <th>Paciente NÃO</th>
-                    <th>Acompanhante SIM</th>
-                    <th>Acompanhante NÃO</th>
-                </tr>
+        <thead>
+        <tr>
+            <!-- Cabeçalho: Mesclando as colunas e linhas -->
+            <th rowspan="2">Perguntas</th>
+            <th colspan="2">Pacientes</th>
+            <th colspan="2">Acompanhante</th>
+		</tr>
+		<tr>
+            <th>SIM</th>
+            <th>NÃO</th>
+            <th>SIM</th>
+            <th>NÃO</th>
+        </tr>
             </thead>
             <tbody>
                 <script>
@@ -398,15 +84,17 @@ function renderSavedData() {
                     perguntas.forEach((pergunta, index) => {
                         document.write(`<tr>
                             <td>${pergunta}</td>
-                            <td><input type="radio" name="paciente_q${index + 1}" value="1"></td>
+                            <td><input type="radio" name="paciente_q${index + 1}" value="1" required></td>
                             <td><input type="radio" name="paciente_q${index + 1}" value="0"></td>
-                            <td><input type="radio" name="acomp_q${index + 1}" value="1"></td>
+                            <td><input type="radio" name="acomp_q${index + 1}" value="1" required></td>
                             <td><input type="radio" name="acomp_q${index + 1}" value="0"></td>
                         </tr>`);
                     });
                 </script>
             </tbody>
         </table>
+		<button type="reset">Limpar Seleção</button>
+		</form>
     </div>
     <br>
     <button type="button" id="save-data">Salvar Dados</button>
@@ -414,11 +102,309 @@ function renderSavedData() {
     <button type="button" id="export-data">Exportar JSON</button>
     <label for="import-data" class="button">Importar JSON</label>
     <input type="file" id="import-data" accept="application/json" style="display:none;">
-	<button type="button" id="reset-data">Resetar Dados</button>
-</div>
 
+</div>
+<br><br><br>
 <div id="saved-data"></div>
+<br><br><br>
+<a id="reset-data">Resetar Dados</a>
 
 </body>
+<script> class Paciente {
+    constructor() {
+        const numRegistro = document.getElementById("num-registro").value;
+        const idade = parseInt(document.getElementById("idade").value, 10);
+		const comorbidades = parseInt(document.getElementById("comorbidades").value, 10);
+		const polifarmacia = document.getElementById("polifarmacia").value;
+        if (!numRegistro) {
+            throw new Error("Número de Registro é obrigatório.");
+        }
+        if (isNaN(idade) || idade < 1) {
+            throw new Error("Idade deve ser um número positivo maior que zero.");
+        }
+		if (isNaN(comorbidades) || comorbidades < 0) {
+            throw new Error("Comorbidades deve ser um número positivo.");
+        }
+
+        this.numRegistro = numRegistro;
+        this.idade = idade;
+        this.genero = document.getElementById("genero").value || null;
+        this.escolaridade = document.getElementById("escolaridade").value || null;
+        this.polifarmacia = [polifarmacia];
+        this.comorbidades = [comorbidades];
+        this.rp = [];
+        this.ra = [];
+        this.data_hora = new Date().toISOString(); // Timestamp automático
+    }
+	coletarRespostas() {
+        for (let i = 1; i <= 16; i++) {
+            const respostaPaciente = document.querySelector(`input[name=paciente_q${i}]:checked`);
+            this.rp.push(respostaPaciente ? respostaPaciente.value : null);
+
+            const respostaAcomp = document.querySelector(`input[name=acomp_q${i}]:checked`);
+            this.ra.push(respostaAcomp ? respostaAcomp.value : null);
+        }
+    }
+    // Método para salvar ou atualizar o paciente no localStorage
+    save() {
+        const CPF = `paciente_${this.numRegistro}`;
+
+        // Verificar se o CPF já existe
+        const existingData = JSON.parse(localStorage.getItem(CPF)) || [];
+        if (existingData.length > 0) {
+            throw new Error(`Paciente com o número de registro ${this.numRegistro} já existe!`);
+        }
+
+        // Adiciona a nova versão do paciente ao histórico
+        existingData.push(this);
+
+        // Salva o histórico completo
+        localStorage.setItem(CPF, JSON.stringify(existingData));
+        console.log(`Paciente ${this.numRegistro} salvo com sucesso!`);
+    }
+
+    // Método para obter os dados mais recentes do paciente
+    static read(numRegistro) {
+        const CPF = `paciente_${numRegistro}`;
+        const existingData = JSON.parse(localStorage.getItem(CPF));
+
+        if (existingData && existingData.length > 0) {
+            console.log(`Última versão do Paciente ${numRegistro} carregada.`);
+            return existingData[existingData.length - 1]; // Retorna a última versão
+        } else {
+            console.warn(`Paciente ${numRegistro} não encontrado!`);
+            return null;
+        }
+    }
+
+    // Método para obter o histórico completo do paciente
+    static history(numRegistro) {
+        const CPF = `paciente_${numRegistro}`;
+        const existingData = JSON.parse(localStorage.getItem(CPF));
+
+        if (existingData && existingData.length > 0) {
+            console.log(`Histórico completo do Paciente ${numRegistro} carregado.`);
+            return existingData; // Retorna o histórico completo
+        } else {
+            console.warn(`Histórico do Paciente ${numRegistro} não encontrado!`);
+            return [];
+        }
+    }
+
+    // Método estático para remover o paciente do localStorage
+    static remove(numRegistro) {
+        const CPF = `paciente_${numRegistro}`;
+        localStorage.removeItem(CPF);
+        console.log(`Paciente ${numRegistro} e seu histórico foram removidos.`);
+    }
+}
+
+// Botão para salvar dados
+document.getElementById("save-data").addEventListener("click", () => {
+    try {
+        const paciente = new Paciente();
+		paciente.coletarRespostas();
+        paciente.save();
+        alert("Dados salvos com sucesso!");
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+// Botão para exportar JSON
+document.getElementById("export-data").addEventListener("click", () => {
+    const pacientes = [];
+    for (let key in localStorage) {
+        if (key.startsWith("paciente_")) {
+            pacientes.push(...JSON.parse(localStorage.getItem(key)));
+        }
+    }
+    const blob = new Blob([JSON.stringify(pacientes, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "pacientes.json";
+    link.click();
+    URL.revokeObjectURL(url);
+});
+
+// Botão para importar JSON
+document.getElementById("import-data").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const text = await file.text();
+        const importedData = JSON.parse(text);
+        importedData.forEach((paciente) => {
+            const key = `paciente_${paciente.numRegistro}`;
+            localStorage.setItem(key, JSON.stringify([paciente]));
+        });
+        alert("Dados importados com sucesso!");
+    }
+});
+
+// Botão para resetar dados
+document.getElementById("reset-data").addEventListener("click", () => {
+    if (confirm("Tem certeza que deseja apagar todos os dados?")) {
+        localStorage.clear();
+        alert("Todos os dados foram apagados.");
+    }
+});
+// Atualiza o conteúdo da div saved-data
+function atualizarSavedData() {
+    const savedDataDiv = document.getElementById("saved-data");
+    savedDataDiv.innerHTML = ""; // Limpa a div antes de atualizar
+
+    const pacientes = [];
+    for (let key in localStorage) {
+        if (key.startsWith("paciente_")) {
+            pacientes.push(...JSON.parse(localStorage.getItem(key)));
+        }
+    }
+
+    if (pacientes.length === 0) {
+        savedDataDiv.innerHTML = "<p>Nenhum dado salvo.</p>";
+        return;
+    }
+
+    // Cria uma tabela para exibir os dados
+    const table = document.createElement("table");
+    table.border = "1";
+    const thead = document.createElement("thead");
+    thead.innerHTML = `
+        <tr>
+            <th>Número de Registro</th>
+            <th>Idade</th>
+            <th>Gênero</th>
+            <th>Escolaridade</th>
+            <th>Polifarmácia</th>
+            <th>Comorbidades</th>
+            <th>Última Atualização</th>
+        </tr>
+    `;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    pacientes.forEach((paciente) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${paciente.numRegistro}</td>
+            <td>${paciente.idade}</td>
+            <td>${paciente.genero === "0" ? "Feminino" : "Masculino"}</td>
+            <td>${["Fundamental", "Médio", "Superior"][paciente.escolaridade - 1]}</td>
+            <td>${paciente.polifarmacia === "1" ? "Sim" : "Não"}</td>
+            <td>${paciente.comorbidades}</td>
+            <td>${new Date(paciente.data_hora).toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    savedDataDiv.appendChild(table);
+}
+document.getElementById("save-data").addEventListener("click", () => {
+    try {
+        const paciente = new Paciente();
+        paciente.save();
+        alert("Dados salvos com sucesso!");
+        atualizarSavedData(); // Atualiza a div
+    } catch (error) {
+        alert(error.message);
+    }
+});
+document.getElementById("import-data").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const text = await file.text();
+        const importedData = JSON.parse(text);
+        importedData.forEach((paciente) => {
+            const key = `paciente_${paciente.numRegistro}`;
+            localStorage.setItem(key, JSON.stringify([paciente]));
+        });
+        alert("Dados importados com sucesso!");
+        atualizarSavedData(); // Atualiza a div
+    }
+});
+document.getElementById("reset-data").addEventListener("click", () => {
+    if (confirm("Tem certeza que deseja apagar todos os dados?")) {
+        localStorage.clear();
+        alert("Todos os dados foram apagados.");
+        atualizarSavedData(); // Atualiza a div
+    }
+});
+document.addEventListener("DOMContentLoaded", () => {
+    atualizarSavedData();
+});
+function atualizarSavedData() {
+    const savedDataDiv = document.getElementById("saved-data");
+    savedDataDiv.innerHTML = ""; // Limpa a div antes de atualizar
+
+    const pacientes = [];
+    for (let key in localStorage) {
+        if (key.startsWith("paciente_")) {
+            pacientes.push(...JSON.parse(localStorage.getItem(key)));
+        }
+    }
+
+    if (pacientes.length === 0) {
+        savedDataDiv.innerHTML = "<p>Nenhum dado salvo.</p>";
+        return;
+    }
+
+    // Cria uma tabela para exibir os dados
+    const table = document.createElement("table");
+    table.border = "1";
+    const thead = document.createElement("thead");
+    thead.innerHTML = `
+        <tr>
+            <th>Número de Registro</th>
+            <th>Idade</th>
+            <th>Gênero</th>
+            <th>Escolaridade</th>
+            <th>Polifarmácia</th>
+            <th>Comorbidades</th>
+            <th>Última Atualização</th>
+            <th>Ações</th>
+        </tr>
+    `;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    pacientes.forEach((paciente) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${paciente.numRegistro}</td>
+            <td>${paciente.idade}</td>
+            <td>${paciente.genero === "0" ? "Feminino" : "Masculino"}</td>
+            <td>${["Fundamental", "Médio", "Superior"][paciente.escolaridade - 1]}</td>
+            <td>${paciente.polifarmacia[0] === "1" ? "Sim" : "Não"}</td>
+            <td>${paciente.comorbidades[0]}</td>
+            <td>${new Date(paciente.data_hora).toLocaleString()}</td>
+        `;
+
+        // Botão de excluir
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Apagar";
+        deleteBtn.addEventListener("click", () => {
+            if (confirm(`Tem certeza que deseja apagar o registro ${paciente.numRegistro}?`)) {
+                localStorage.removeItem(`paciente_${paciente.numRegistro}`);
+                alert(`Registro ${paciente.numRegistro} apagado com sucesso!`);
+                atualizarSavedData(); // Atualiza a tabela após a exclusão
+            }
+        });
+
+        const actionsTd = document.createElement("td");
+        actionsTd.appendChild(deleteBtn);
+        tr.appendChild(actionsTd);
+
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    savedDataDiv.appendChild(table);
+}
+    function apenasNumeros(event) {
+        const inpult = event.target;
+        inpult.value = inpult.value.replace(/[^0-9]/g, '');
+    }
+
+</script>
 
 </html>
