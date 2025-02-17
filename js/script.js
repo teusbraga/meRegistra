@@ -1,4 +1,4 @@
-// Função para permitir apenas números no input
+// ******************** Função para permitir apenas números no input ********************
 function apenasNumeros(event) {
   const input = event.target;
   input.value = input.value.replace(/[^0-9]/g, '');
@@ -34,37 +34,79 @@ if (initialHash) {
 // Limpa o hash da URL sem recarregar a página
 history.replaceState(null, "", "index.html");
 
-// ******************** Persistence Adapter ********************
-class PersistenceAdapter {
+// ******************** Persistence Adapter com IndexedDB ********************
+class IndexedDBPersistenceAdapter {
   constructor(storageKey = 'pacientes') {
     this.storageKey = storageKey;
-    if (!localStorage.getItem(this.storageKey)) {
-      this.setData([]);
-    }
+    this.dbName = 'pacientesDB';
+    this.storeName = 'store';
+    this.dbPromise = this._initDB();
   }
 
-  getData() {
-    try {
-      return JSON.parse(localStorage.getItem(this.storageKey)) || [];
-    } catch (e) {
-      console.error("Erro ao ler dados:", e);
-      return [];
-    }
+  _initDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, 1);
+      request.onupgradeneeded = event => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(this.storeName)) {
+          db.createObjectStore(this.storeName);
+        }
+      };
+      request.onsuccess = event => {
+        const db = event.target.result;
+        // Certifica-se de que a chave existe
+        const transaction = db.transaction(this.storeName, 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        const getRequest = store.get(this.storageKey);
+        getRequest.onsuccess = () => {
+          if (getRequest.result === undefined) {
+            store.put([], this.storageKey);
+          }
+        };
+        transaction.oncomplete = () => resolve(db);
+      };
+      request.onerror = event => {
+        reject(event.target.error);
+      };
+    });
   }
 
-  setData(data) {
-    localStorage.setItem(this.storageKey, JSON.stringify(data));
+  async getData() {
+    const db = await this.dbPromise;
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(this.storeName, 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.get(this.storageKey);
+      request.onsuccess = () => {
+        resolve(request.result || []);
+      };
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
   }
 
-  exportJSON() {
-    return JSON.stringify(this.getData());
+  async setData(data) {
+    const db = await this.dbPromise;
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(this.storeName, 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.put(data, this.storageKey);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
   }
 
-  importJSON(jsonData) {
+  async exportJSON() {
+    const data = await this.getData();
+    return JSON.stringify(data);
+  }
+
+  async importJSON(jsonData) {
     try {
       const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
       if (Array.isArray(data)) {
-        this.setData(data);
+        await this.setData(data);
         return true;
       } else {
         throw new Error("Dados importados não são um array.");
@@ -101,61 +143,61 @@ class Paciente {
   }
 }
 
-// ******************** Paciente Model ********************
+// ******************** Paciente Model (adaptado para async) ********************
 class PacienteModel {
   constructor(adapter) {
     this.adapter = adapter;
   }
 
-  getPacientes() {
-    return this.adapter.getData();
+  async getPacientes() {
+    return await this.adapter.getData();
   }
 
-  create(data) {
-    const pacientes = this.getPacientes();
+  async create(data) {
+    const pacientes = await this.getPacientes();
     const paciente = new Paciente(data);
     // Impede duplicação do número de registro
     if (pacientes.some(p => p.numRegistro === paciente.numRegistro)) {
       throw new Error("Paciente com este Número de Registro já existe.");
     }
     pacientes.push(paciente);
-    this.adapter.setData(pacientes);
+    await this.adapter.setData(pacientes);
     return paciente;
   }
 
-  update(data) {
-    const pacientes = this.getPacientes();
+  async update(data) {
+    const pacientes = await this.getPacientes();
     const index = pacientes.findIndex(p => p.numRegistro === data.numRegistro);
     if (index !== -1) {
       const paciente = new Paciente(data);
       pacientes[index] = paciente;
-      this.adapter.setData(pacientes);
+      await this.adapter.setData(pacientes);
       return paciente;
     }
     throw new Error("Paciente não encontrado para atualização.");
   }
 
-  delete(numRegistro) {
-    let pacientes = this.getPacientes();
+  async delete(numRegistro) {
+    let pacientes = await this.getPacientes();
     pacientes = pacientes.filter(p => p.numRegistro !== numRegistro);
-    this.adapter.setData(pacientes);
+    await this.adapter.setData(pacientes);
   }
 
-  getByNumRegistro(numRegistro) {
-    const pacientes = this.getPacientes();
+  async getByNumRegistro(numRegistro) {
+    const pacientes = await this.getPacientes();
     return pacientes.find(p => p.numRegistro === numRegistro);
   }
 
-  exportData() {
-    return this.adapter.exportJSON();
+  async exportData() {
+    return await this.adapter.exportJSON();
   }
 
-  importData(jsonData) {
-    return this.adapter.importJSON(jsonData);
+  async importData(jsonData) {
+    return await this.adapter.importJSON(jsonData);
   }
 }
 
-// ******************** Paciente View ********************
+// ******************** Paciente View (permanece praticamente inalterada) ********************
 class PacienteView {
   constructor() {
     // Formulário de cadastro (presente na seção "Cadastrar")
@@ -230,7 +272,6 @@ class PacienteView {
     }
   }
 
-  // Método para converter valores numéricos para textos reais
   convertValue(field, value) {
     if (field === 'genero') return (value === "0" || value === 0) ? 'Feminino' : 'Masculino';
     if (field === 'polifarmacia') return (value === "1" || value === 1) ? 'Sim' : 'Não';
@@ -242,13 +283,11 @@ class PacienteView {
     return value;
   }
 
-  // Renderiza a tabela de pacientes
   renderPacientes(pacientes) {
     this.savedDataDiv.innerHTML = '';
     const table = document.createElement('table');
     table.id = 'paciente-table';
 
-    // Cabeçalho
     const thead = document.createElement('thead');
     thead.innerHTML = `<tr>
       <th>Número de Registro</th>
@@ -262,7 +301,6 @@ class PacienteView {
     </tr>`;
     table.appendChild(thead);
 
-    // Corpo
     const tbody = document.createElement('tbody');
     pacientes.forEach(paciente => {
       const row = document.createElement('tr');
@@ -286,7 +324,6 @@ class PacienteView {
     this.tableBody = tbody;
   }
 
-  // Modal de detalhes (apresenta os dados com os valores convertidos)
   renderPacienteModal(paciente) {
     document.body.style.overflow = 'hidden';
     const overlay = document.createElement('div');
@@ -351,8 +388,6 @@ class PacienteView {
     document.body.appendChild(overlay);
   }
 
-  // Modal de edição – recria o formulário de cadastro e o preenche com os dados do paciente.
-  // onSaveCallback é chamado com os dados atualizados quando o usuário clica em "Salvar Dados"
   renderEditPacienteModal(paciente, onSaveCallback) {
     document.body.style.overflow = 'hidden';
     const overlay = document.createElement('div');
@@ -382,7 +417,6 @@ class PacienteView {
       document.body.style.overflow = '';
     });
 
-    // Cria o formulário de edição (estrutura similar à seção "Cadastrar")
     const form = document.createElement('form');
     form.id = 'edit-registro';
     form.innerHTML = `
@@ -415,7 +449,6 @@ class PacienteView {
       <input type="number" id="edit-comorbidades" name="comorbidades" min="0" value="0" required>
       <br><br>
     `;
-    // Cria a tabela de perguntas (para rp e ra)
     let tableHTML = `
       <div id="edit-perguntasDiv">
       <table>
@@ -455,7 +488,6 @@ class PacienteView {
     `;
     form.innerHTML += tableHTML;
 
-    // Preenche o formulário com os dados do paciente
     form.querySelector('#edit-num-registro').value = paciente.numRegistro;
     form.querySelector('#edit-num-registro').readOnly = true;
     form.querySelector('#edit-idade').value = paciente.idade;
@@ -482,7 +514,6 @@ class PacienteView {
     overlay.appendChild(modalContent);
     document.body.appendChild(overlay);
 
-    // Ao clicar em "Salvar Dados" no modal de edição, coleta os dados e chama o callback
     form.querySelector('#edit-save-data').addEventListener('click', () => {
       const updatedData = {
         numRegistro: form.querySelector('#edit-num-registro').value,
@@ -508,14 +539,17 @@ class PacienteView {
   }
 }
 
-// ******************** Paciente Controller ********************
+// ******************** Paciente Controller (adaptado para async) ********************
 class PacienteController {
   constructor(model, view) {
     this.model = model;
     this.view = view;
     this.editing = false;
 
-    this.view.renderPacientes(this.model.getPacientes());
+    // Renderiza os pacientes após carregá-los do IndexedDB
+    this.model.getPacientes().then(pacientes => {
+      this.view.renderPacientes(pacientes);
+    });
 
     const saveButton = document.getElementById('save-data');
     saveButton.addEventListener('click', (e) => this.handleFormSubmit(e));
@@ -523,47 +557,65 @@ class PacienteController {
     this.view.savedDataDiv.addEventListener('click', (e) => this.handleTableClick(e));
   }
 
-  handleFormSubmit(e) {
+  async handleFormSubmit(e) {
     e.preventDefault();
     try {
-      const formData = this.view.getFormData ? this.view.getFormData() : {};
-      // Se estiver usando o formulário de cadastro (fora do modal)
+      // Coleta os dados do formulário de cadastro
+      const formData = {
+        numRegistro: document.getElementById('num-registro').value,
+        idade: parseInt(document.getElementById('idade').value, 10),
+        genero: document.getElementById('genero').value,
+        escolaridade: document.getElementById('escolaridade').value,
+        polifarmacia: document.getElementById('polifarmacia').value,
+        comorbidades: parseInt(document.getElementById('comorbidades').value, 10),
+        rp: [],
+        ra: [],
+        data_hora: new Date().toISOString()
+      };
+      for (let i = 1; i <= 16; i++) {
+        const rpRadio = document.querySelector(`input[name="paciente_q${i}"]:checked`);
+        formData.rp.push(rpRadio ? rpRadio.value : null);
+        const raRadio = document.querySelector(`input[name="acomp_q${i}"]:checked`);
+        formData.ra.push(raRadio ? raRadio.value : null);
+      }
+      
       if (this.editing) {
-        this.model.update(formData);
+        await this.model.update(formData);
         this.editing = false;
         this.view.inputNumRegistro.readOnly = false;
       } else {
-        const existingPaciente = this.model.getByNumRegistro(formData.numRegistro);
+        const existingPaciente = await this.model.getByNumRegistro(formData.numRegistro);
         if (existingPaciente) {
           throw new Error("Paciente com este Número de Registro já existe. Utilize a opção de editar.");
         }
-        this.model.create(formData);
+        await this.model.create(formData);
       }
       this.view.clearForm();
-      this.view.renderPacientes(this.model.getPacientes());
+      const pacientes = await this.model.getPacientes();
+      this.view.renderPacientes(pacientes);
       alert("Dados salvos com sucesso!");
     } catch (error) {
       alert(error.message);
     }
   }
 
-  handleTableClick(e) {
+  async handleTableClick(e) {
     const target = e.target;
     const numRegistro = target.getAttribute('data-num');
     if (target.classList.contains('view-paciente')) {
       e.preventDefault();
-      const paciente = this.model.getByNumRegistro(numRegistro);
+      const paciente = await this.model.getByNumRegistro(numRegistro);
       if (paciente) {
         this.view.renderPacienteModal(paciente);
       }
     } else if (target.classList.contains('edit-btn')) {
-      const paciente = this.model.getByNumRegistro(numRegistro);
+      const paciente = await this.model.getByNumRegistro(numRegistro);
       if (paciente) {
-        // Abre o modal de edição em vez de ir para a seção "Cadastrar"
-        this.view.renderEditPacienteModal(paciente, (updatedData) => {
+        this.view.renderEditPacienteModal(paciente, async (updatedData) => {
           try {
-            this.model.update(updatedData);
-            this.view.renderPacientes(this.model.getPacientes());
+            await this.model.update(updatedData);
+            const pacientes = await this.model.getPacientes();
+            this.view.renderPacientes(pacientes);
             alert("Dados atualizados com sucesso!");
           } catch (error) {
             alert(error.message);
@@ -572,23 +624,25 @@ class PacienteController {
       }
     } else if (target.classList.contains('delete-btn')) {
       if (confirm('Deseja excluir este paciente?')) {
-        this.model.delete(numRegistro);
-        this.view.renderPacientes(this.model.getPacientes());
+        await this.model.delete(numRegistro);
+        const pacientes = await this.model.getPacientes();
+        this.view.renderPacientes(pacientes);
       }
     }
   }
 }
 
 // ******************** Inicialização e Funcionalidades de Backup ********************
-document.addEventListener('DOMContentLoaded', () => {
-  const adapter = new PersistenceAdapter('pacientes');
+document.addEventListener('DOMContentLoaded', async () => {
+  // Utiliza o adapter com IndexedDB em vez de localStorage
+  const adapter = new IndexedDBPersistenceAdapter('pacientes');
   const model = new PacienteModel(adapter);
   const view = new PacienteView();
   new PacienteController(model, view);
 
   const exportButton = document.getElementById('export-data');
-  exportButton.addEventListener('click', () => {
-    const jsonData = adapter.exportJSON();
+  exportButton.addEventListener('click', async () => {
+    const jsonData = await model.exportData();
     const blob = new Blob([jsonData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -601,16 +655,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const importInput = document.getElementById('import-data');
-  importInput.addEventListener('change', (e) => {
+  importInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
       try {
-        const result = adapter.importJSON(e.target.result);
+        const result = await model.importData(e.target.result);
         if (result) {
           alert('Dados importados com sucesso!');
-          view.renderPacientes(model.getPacientes());
+          const pacientes = await model.getPacientes();
+          view.renderPacientes(pacientes);
         } else {
           alert('Erro ao importar os dados.');
         }
