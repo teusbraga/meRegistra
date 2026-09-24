@@ -10,9 +10,15 @@ const sections = document.querySelectorAll('.section');
 
 function activateSection(targetId) {
   sections.forEach(section => {
-    section.classList.remove('active');
-    if (section.id === targetId) {
-      section.classList.add('active');
+    const isActive = section.id === targetId;
+    section.classList.toggle('active', isActive);
+    section.setAttribute('aria-hidden', String(!isActive));
+  });
+  links.forEach(link => {
+    if (link.getAttribute('data-target') === targetId) {
+      link.setAttribute('aria-current', 'page');
+    } else {
+      link.removeAttribute('aria-current');
     }
   });
 }
@@ -27,9 +33,17 @@ links.forEach(link => {
 });
 
 const initialHash = window.location.hash.substring(1);
-if (initialHash) {
-  activateSection(initialHash);
-}
+const initialSection = Array.from(sections).some(section => section.id === initialHash)
+  ? initialHash
+  : 'home';
+activateSection(initialSection);
+
+document.querySelector('label[for="import-data"]').addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    document.getElementById('import-data').click();
+  }
+});
 
 // Limpa o hash da URL sem recarregar a página
 history.replaceState(null, "", "index.html");

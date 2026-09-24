@@ -4,61 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>meRegistra! v0.4</title>
-	<link rel="stylesheet" href="css/meRegistra.css">	
-
+    <link rel="stylesheet" href="css/meRegistra.css">
+</head>
 <body>
     <!-- Navegação -->
-    <nav>
-        <a href="#home" class="nav-link" data-target="home">Home</a>
+    <nav aria-label="Navegação principal">
+        <a href="#home" class="nav-link" data-target="home" aria-current="page">Home</a>
         <a href="#Cadastrar" class="nav-link" data-target="Cadastrar">Cadastrar</a>
         <a href="#Buscar" class="nav-link" data-target="Buscar">Buscar</a>
     </nav>
     <!-- Seções: Cada uma com conteúdo único -->
-    <section id="home" class="section active">
-	<br><br><br><br>
-        <h1>Home</h1>
-        <p>Bem-vindo à página inicial. Aqui você encontra informações importantes.</p>
-		<label for="import-data" class="button" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">Importar Dados </label>
-		<input type="file" id="import-data" accept="application/json" style="display:none;">
+    <section id="home" class="section active" aria-labelledby="home-title">
+        <h1 id="home-title">meRegistra!</h1>
+        <p>Cadastro e acompanhamento de informações de pacientes em um só lugar.</p>
+        <label for="import-data" class="button" tabindex="0">Importar dados</label>
+        <input type="file" id="import-data" accept="application/json">
     </section>
 
-    <section id="Cadastrar" class="section">
-	<br><br><br><br>
-        <h1>Cadastrar</h1>
+    <section id="Cadastrar" class="section" aria-labelledby="cadastro-title">
+        <h1 id="cadastro-title">Cadastrar paciente</h1>
 		<div id="novoCadastro">
 			<div id="formularioDiv">
+			<h2>Dados do paciente</h2>
 			<form id="registro">
             <label for="num-registro">Número de Registro</label>
             <input type="text" id="num-registro" name="num-registro" maxlength="18" oninput="apenasNumeros(event)" required>
-            <br><br>
             <label for="idade">Idade</label>
             <input type="number" id="idade" name="idade" min="1" required>
-            <br><br>
             <label for="genero">Gênero</label>
             <select id="genero" name="genero" required>
                 <option value="0" selected>Feminino</option>
                 <option value="1">Masculino</option>
             </select>
-            <br><br>
             <label for="escolaridade">Escolaridade</label>
             <select id="escolaridade" name="escolaridade" required>
                 <option value="1" selected>Fundamental</option>
                 <option value="2">Médio</option>
                 <option value="3">Superior</option>
             </select>
-            <br><br>
             <label for="polifarmacia">Polifarmácia</label>
             <select id="polifarmacia" name="polifarmacia" required>
                 <option value="1">Sim</option>
                 <option value="0" selected>Não</option>
             </select>
-            <br><br>
             <label for="comorbidades">Comorbidades</label>
             <input type="number" id="comorbidades" name="comorbidades" min="0" value="0" required>
         </form>
     </div>
 
     <div id="perguntasDiv">
+	<h2>Questionário</h2>
 	<form>
         <table>
         <thead>
@@ -108,7 +103,7 @@
                 </script>
             </tbody>
         </table>
-		<button type="reset" style="background-color: #aaa  " >Limpar Seleção</button>
+        <button type="reset">Limpar seleção</button>
 		</form>
     </div>
     <br>
@@ -117,9 +112,8 @@
 	<br><br><br>
     </section>
 
-    <section id="Buscar" class="section">
-        <br><br><br><br><br>
-		<h1>Buscar</h1>
+    <section id="Buscar" class="section" aria-labelledby="busca-title">
+		<h1 id="busca-title">Pacientes cadastrados</h1>
 		<div id="saved-data"></div>
 		<button type="button" id="export-data">Exportar Todos os Dados</button>
     </section>
