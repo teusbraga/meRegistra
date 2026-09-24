@@ -119,6 +119,12 @@ class IndexedDBPersistenceAdapter {
 }
 
 // ******************** Paciente Entity ********************
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>\"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;'
+  })[character]);
+}
+
 class Paciente {
   constructor({ numRegistro, idade, genero, escolaridade, polifarmacia, comorbidades, rp, ra, data_hora }) {
     if (!numRegistro) {
@@ -135,8 +141,13 @@ class Paciente {
     this.idade = idade;
     this.genero = genero || null;
     this.escolaridade = escolaridade || null;
-    this.polifarmacia = polifarmacia !== undefined ? [polifarmacia] : [];
-    this.comorbidades = comorbidades !== undefined ? [comorbidades] : [];
+    const polifarmaciaValue = Array.isArray(polifarmacia) ? polifarmacia[0] : polifarmacia;
+    const comorbidadesValue = Array.isArray(comorbidades) ? comorbidades[0] : comorbidades;
+    this.polifarmacia = polifarmaciaValue === true || polifarmaciaValue === 1 || polifarmaciaValue === '1';
+    this.comorbidades = Number(comorbidadesValue ?? 0);
+    if (!Number.isInteger(this.comorbidades) || this.comorbidades < 0) {
+      throw new Error("Comorbidades deve ser um número inteiro não negativo.");
+    }
     this.rp = Array.isArray(rp) ? rp : new Array(16).fill(null);
     this.ra = Array.isArray(ra) ? ra : new Array(16).fill(null);
     this.data_hora = data_hora || new Date().toISOString();
@@ -150,7 +161,8 @@ class PacienteModel {
   }
 
   async getPacientes() {
-    return await this.adapter.getData();
+    const pacientes = await this.adapter.getData();
+    return pacientes.map(paciente => new Paciente(paciente));
   }
 
   async create(data) {
@@ -254,8 +266,8 @@ class PacienteView {
     this.inputIdade.value = paciente.idade;
     this.inputGenero.value = paciente.genero;
     this.inputEscolaridade.value = paciente.escolaridade;
-    this.inputPolifarmacia.value = paciente.polifarmacia[0] || '';
-    this.inputComorbidades.value = paciente.comorbidades[0] || '';
+    this.inputPolifarmacia.value = paciente.polifarmacia ? '1' : '0';
+    this.inputComorbidades.value = paciente.comorbidades ?? 0;
     this.inputNumRegistro.readOnly = true;
 
     for (let i = 1; i <= 16; i++) {
@@ -274,7 +286,7 @@ class PacienteView {
 
   convertValue(field, value) {
     if (field === 'genero') return (value === "0" || value === 0) ? 'Feminino' : 'Masculino';
-    if (field === 'polifarmacia') return (value === "1" || value === 1) ? 'Sim' : 'Não';
+    if (field === 'polifarmacia') return (value === true || value === "1" || value === 1) ? 'Sim' : 'Não';
     if (field === 'escolaridade') {
       if (value === "1" || value === 1) return 'Fundamental';
       if (value === "2" || value === 2) return 'Médio';
@@ -305,16 +317,16 @@ class PacienteView {
     pacientes.forEach(paciente => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td><a href="#" class="view-paciente" data-num="${paciente.numRegistro}">${paciente.numRegistro}</a></td>
-        <td>${paciente.idade}</td>
-        <td>${this.convertValue('genero', paciente.genero)}</td>
-        <td>${this.convertValue('escolaridade', paciente.escolaridade)}</td>
-        <td>${this.convertValue('polifarmacia', paciente.polifarmacia[0] || '')}</td>
-        <td>${paciente.comorbidades.join(', ')}</td>
-        <td>${paciente.data_hora}</td>
+        <td><a href="#" class="view-paciente" data-num="${escapeHtml(paciente.numRegistro)}">${escapeHtml(paciente.numRegistro)}</a></td>
+        <td>${escapeHtml(paciente.idade)}</td>
+        <td>${escapeHtml(this.convertValue('genero', paciente.genero))}</td>
+        <td>${escapeHtml(this.convertValue('escolaridade', paciente.escolaridade))}</td>
+        <td>${escapeHtml(this.convertValue('polifarmacia', paciente.polifarmacia ? '1' : '0'))}</td>
+        <td>${escapeHtml(paciente.comorbidades)}</td>
+        <td>${escapeHtml(paciente.data_hora)}</td>
         <td class="actions">
-          <button data-num="${paciente.numRegistro}" class="edit-btn">Editar</button>
-          <button data-num="${paciente.numRegistro}" class="delete-btn">Excluir</button>
+          <button data-num="${escapeHtml(paciente.numRegistro)}" class="edit-btn">Editar</button>
+          <button data-num="${escapeHtml(paciente.numRegistro)}" class="delete-btn">Excluir</button>
         </td>
       `;
       tbody.appendChild(row);
@@ -356,13 +368,13 @@ class PacienteView {
     modalContent.innerHTML += `
       <h2>Detalhes do Paciente</h2>
       <table>
-        <tr><td>Número de Registro</td><td>${paciente.numRegistro}</td></tr>
-        <tr><td>Idade</td><td>${paciente.idade}</td></tr>
-        <tr><td>Gênero</td><td>${this.convertValue('genero', paciente.genero)}</td></tr>
-        <tr><td>Escolaridade</td><td>${this.convertValue('escolaridade', paciente.escolaridade)}</td></tr>
-        <tr><td>Polifarmácia</td><td>${this.convertValue('polifarmacia', paciente.polifarmacia[0] || '')}</td></tr>
-        <tr><td>Comorbidades</td><td>${paciente.comorbidades.join(', ')}</td></tr>
-        <tr><td>Data/Hora</td><td>${paciente.data_hora}</td></tr>
+        <tr><td>Número de Registro</td><td>${escapeHtml(paciente.numRegistro)}</td></tr>
+        <tr><td>Idade</td><td>${escapeHtml(paciente.idade)}</td></tr>
+        <tr><td>Gênero</td><td>${escapeHtml(this.convertValue('genero', paciente.genero))}</td></tr>
+        <tr><td>Escolaridade</td><td>${escapeHtml(this.convertValue('escolaridade', paciente.escolaridade))}</td></tr>
+        <tr><td>Polifarmácia</td><td>${escapeHtml(this.convertValue('polifarmacia', paciente.polifarmacia ? '1' : '0'))}</td></tr>
+        <tr><td>Comorbidades</td><td>${escapeHtml(paciente.comorbidades)}</td></tr>
+        <tr><td>Data/Hora</td><td>${escapeHtml(paciente.data_hora)}</td></tr>
       </table>
       <h3>Respostas do Paciente (RP)</h3>
       <table>
@@ -493,8 +505,8 @@ class PacienteView {
     form.querySelector('#edit-idade').value = paciente.idade;
     form.querySelector('#edit-genero').value = paciente.genero;
     form.querySelector('#edit-escolaridade').value = paciente.escolaridade;
-    form.querySelector('#edit-polifarmacia').value = paciente.polifarmacia[0] || '';
-    form.querySelector('#edit-comorbidades').value = paciente.comorbidades[0] || 0;
+    form.querySelector('#edit-polifarmacia').value = paciente.polifarmacia ? '1' : '0';
+    form.querySelector('#edit-comorbidades').value = paciente.comorbidades ?? 0;
     
     for (let i = 1; i <= 16; i++) {
       const rpValue = paciente.rp[i - 1];
