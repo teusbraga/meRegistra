@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>meRegistra! v0.4</title>
+	<link rel="stylesheet" href="css/meRegistra.css">	
+
+<body>
+    <!-- Navegação -->
+    <nav>
+        <a href="#home" class="nav-link" data-target="home">Home</a>
+        <a href="#Cadastrar" class="nav-link" data-target="Cadastrar">Cadastrar</a>
+        <a href="#Buscar" class="nav-link" data-target="Buscar">Buscar</a>
+    </nav>
+    <!-- Seções: Cada uma com conteúdo único -->
+    <section id="home" class="section active">
+	<br><br><br><br>
+        <h1>Home</h1>
+        <p>Bem-vindo à página inicial. Aqui você encontra informações importantes.</p>
+		<label for="import-data" class="button" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">Importar Dados </label>
+		<input type="file" id="import-data" accept="application/json" style="display:none;">
+    </section>
+
+    <section id="Cadastrar" class="section">
+	<br><br><br><br>
+        <h1>Cadastrar</h1>
+		<div id="novoCadastro">
+			<div id="formularioDiv">
+			<form id="registro">
+            <label for="num-registro">Número de Registro</label>
+            <input type="text" id="num-registro" name="num-registro" maxlength="18" oninput="apenasNumeros(event)" required>
+            <br><br>
+            <label for="idade">Idade</label>
+            <input type="number" id="idade" name="idade" min="1" required>
+            <br><br>
+            <label for="genero">Gênero</label>
+            <select id="genero" name="genero" required>
+                <option value="0" selected>Feminino</option>
+                <option value="1">Masculino</option>
+            </select>
+            <br><br>
+            <label for="escolaridade">Escolaridade</label>
+            <select id="escolaridade" name="escolaridade" required>
+                <option value="1" selected>Fundamental</option>
+                <option value="2">Médio</option>
+                <option value="3">Superior</option>
+            </select>
+            <br><br>
+            <label for="polifarmacia">Polifarmácia</label>
+            <select id="polifarmacia" name="polifarmacia" required>
+                <option value="1">Sim</option>
+                <option value="0" selected>Não</option>
+            </select>
+            <br><br>
+            <label for="comorbidades">Comorbidades</label>
+            <input type="number" id="comorbidades" name="comorbidades" min="0" value="0" required>
+        </form>
+    </div>
+
+    <div id="perguntasDiv">
+	<form>
+        <table>
+        <thead>
+        <tr>
+            <!-- Cabeçalho: Mesclando as colunas e linhas -->
+            <th rowspan="2">Perguntas</th>
+            <th colspan="2">Pacientes</th>
+            <th colspan="2">Acompanhante</th>
+		</tr>
+		<tr>
+            <th>SIM</th>
+            <th>NÃO</th>
+            <th>SIM</th>
+            <th>NÃO</th>
+        </tr>
+            </thead>
+            <tbody>
+                <script>
+                    const perguntas = [
+                        "Dores no corpo?",
+                        "Quedas?",
+                        "Não sentir sede?",
+                        "Esquecimento que prejudica as atividades do dia a dia?",
+                        "Não ter vontade de sair de casa?",
+                        "Pele seca?",
+                        "Ter hipertensão arterial?",
+                        "Sentir tontura?",
+                        "Perde urina com facilidade?",
+                        "Ter muitas doenças e tomar muitos remédios?",
+                        "Ter dificuldade para andar?",
+                        "Dormir pouco?",
+                        "Não escutar bem?",
+                        "Ter dificuldade para enxergar?",
+                        "Não sentir gosto dos alimentos?",
+                        "Redução da estatura?",
+                    ];
+
+                    perguntas.forEach((pergunta, index) => {
+                        document.write(`<tr>
+                            <td>${pergunta}</td>
+                            <td><input type="radio" name="paciente_q${index + 1}" value="1"></td>
+                            <td><input type="radio" name="paciente_q${index + 1}" value="0"></td>
+                            <td><input type="radio" name="acomp_q${index + 1}" value="1"></td>
+                            <td><input type="radio" name="acomp_q${index + 1}" value="0"></td>
+                        </tr>`);
+                    });
+                </script>
+            </tbody>
+        </table>
+		<button type="reset" style="background-color: #aaa  " >Limpar Seleção</button>
+		</form>
+    </div>
+    <br>
+    <button type="button" id="save-data">Salvar Dados</button>
+	</div>
+	<br><br><br>
+    </section>
+
+    <section id="Buscar" class="section">
+        <br><br><br><br><br>
+		<h1>Buscar</h1>
+		<div id="saved-data"></div>
+		<button type="button" id="export-data">Exportar Todos os Dados</button>
+	</div>
+    </section>
+	<script src="js/script.js" ></script>
+</head>
+</body>
+</html>

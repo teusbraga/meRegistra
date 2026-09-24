@@ -1,0 +1,86 @@
+class Paciente {
+    constructor() {
+        this.numRegistro = this.getValue("num-registro");
+        this.idade = this.parsePositiveInt("idade");
+        this.genero = this.getValue("genero", null);
+        this.escolaridade = this.getValue("escolaridade", null);
+        this.polifarmacia = [this.getValue("polifarmacia")];
+        this.comorbidades = [this.parsePositiveInt("comorbidades")];
+        this.rp = [];
+        this.ra = [];
+        this.data_hora = new Date().toISOString();
+    }
+
+    getValue(id, defaultValue = "") {
+        return document.getElementById(id)?.value || defaultValue;
+    }
+
+    parsePositiveInt(id) {
+        const value = parseInt(this.getValue(id), 10);
+        if (isNaN(value) || value < 0) {
+            throw new Error(`${id} deve ser um número positivo.`);
+        }
+        return value;
+    }
+
+    coletarRespostas() {
+        for (let i = 1; i <= 16; i++) {
+            this.rp.push(this.getCheckedValue(`paciente_q${i}`));
+            this.ra.push(this.getCheckedValue(`acomp_q${i}`));
+        }
+    }
+
+    getCheckedValue(name) {
+        return document.querySelector(`input[name=${name}]:checked`)?.value || null;
+    }
+
+    save() {
+        const key = `paciente_${this.numRegistro}`;
+        if (localStorage.getItem(key)) {
+            throw new Error(`Paciente com o número de registro ${this.numRegistro} já existe!`);
+        }
+        this.saveToLocalStorage(key, this);
+        console.log(`Paciente ${this.numRegistro} salvo com sucesso!`);
+    }
+
+    saveToLocalStorage(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    setHistory(dadoAntigo) {
+        const key = `pHistory_${this.numRegistro}`;
+        const history = this.getFromLocalStorage(key, []);
+        history.push(dadoAntigo);
+        this.saveToLocalStorage(key, history);
+        console.log(`Histórico atualizado para o paciente ${this.numRegistro}.`);
+    }
+
+    editPacient() {
+        const key = `paciente_${this.numRegistro}`;
+        const existingData = this.getFromLocalStorage(key);
+        if (!existingData) {
+            throw new Error(`Paciente com o número de registro ${this.numRegistro} não existe!`);
+        }
+        this.setHistory(existingData);
+        this.saveToLocalStorage(key, this);
+        console.log(`Paciente ${this.numRegistro} editado com sucesso!`);
+    }
+
+    static read(numRegistro) {
+        return this.getFromLocalStorage(`paciente_${numRegistro}`, null);
+    }
+
+    static getHistory(numRegistro) {
+        return this.getFromLocalStorage(`pHistory_${numRegistro}`, []);
+    }
+
+    static remove(numRegistro) {
+        localStorage.removeItem(`paciente_${numRegistro}`);
+        localStorage.removeItem(`pHistory_${numRegistro}`);
+        console.log(`Paciente ${numRegistro} e seu histórico foram removidos.`);
+    }
+
+    static getFromLocalStorage(key, defaultValue = null) {
+        return JSON.parse(localStorage.getItem(key)) || defaultValue;
+    }
+}

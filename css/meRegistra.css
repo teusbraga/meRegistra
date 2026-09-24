@@ -1,0 +1,302 @@
+
+        /* Estilos globais */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+
+        /* Container principal */
+        #novoCadastro {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        /* Formulário */
+        #formularioDiv {
+            background-color: #BDE890;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Estilo do botão "Importar JSON" */
+        #import-data-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #import-data-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Botão "Resetar Dados" discreto */
+        #reset-data {
+            /*padding: 10px 20px;
+            background-color: #ddd;
+            color: #333;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;*/
+        }
+
+        #reset-data:hover {
+            background-color: #ccc;
+        }
+
+        /* Tabela de perguntas */
+        #perguntasDiv {
+            padding: 0;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            /*border-collapse: collapse;*/
+			border: 1px;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            text-align: center;
+            padding: 1px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Responsividade */
+        @media (min-width: 768px) {
+            #novoCadastro {
+                flex-direction: row;
+                justify-content: center;
+                align-items: flex-start;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+
+            #formularioDiv {
+                width: 40%;
+            }
+
+            #perguntasDiv {
+                width: 40%;
+            }
+
+            button {
+                margin-top: 2px;
+                width: calc(80% + 40px);
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media (max-width: 767px) {
+            /* Estilo para perguntas no mobile */
+            #perguntasDiv {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                max-width: 100%;
+            }
+        }
+		
+  /* Estilo geral para a tabela */
+  #perguntasDiv table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+
+  /* Estilo para células normais */
+  #perguntasDiv td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  /* Estilo para inputs de rádio */
+  #perguntasDiv input[type="radio"] {
+    transform: scale(1.2);
+    margin: 0 5px;
+  }
+
+  /* Alternando cores das linhas */
+  #perguntasDiv tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  #perguntasDiv tbody tr:nth-child(odd) {
+    background-color: #fff;
+  }
+
+  /* Hover para as linhas */
+  #perguntasDiv tbody tr:hover {
+    background-color: #e6f7ff;
+  }
+  
+          /* Todas as seções estão visíveis para motores de busca */
+        .section {
+            position: absolute; /* Evita quebra de layout enquanto oculta */
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0; /* Torna invisível */
+            pointer-events: none; /* Impede interação */
+            
+        }
+        .active {
+            position: relative; /* Garante o layout correto */
+            opacity: 1;
+            pointer-events: auto; /* Permite interação */
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: blue;
+            cursor: pointer;
+        }
+		   nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #fff; /* Fundo para contraste */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra para destaque */
+        z-index: 1000; /* Garante que o menu fique acima do conteúdo */
+        padding: 10px 20px;
+		
+    }
+
+    nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 10px 20px;
+
+        /* Layout flexível */
+        display: flex; /* Ativa o Flexbox */
+        justify-content: CENTER; /* Alinha horizontalmente */
+        
+    }
+
+    /* Links dentro do menu */
+    nav a {
+        text-decoration: none;
+        color: #333;
+        margin: 0 10px;
+        font-weight: bold;
+    }
+	
+#home {	
+text-align: center; /* Alinha o texto no centro */
+
+    
+}
+
+ .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: #fff;
+  padding: 20px;
+  max-width: 600px;
+  width: 90%;
+  position: relative;
+  border-radius: 4px;
+}
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
